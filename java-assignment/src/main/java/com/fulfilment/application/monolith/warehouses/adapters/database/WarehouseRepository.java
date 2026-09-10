@@ -16,25 +16,45 @@ public class WarehouseRepository implements WarehouseStore, PanacheRepository<Db
 
   @Override
   public void create(Warehouse warehouse) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'create'");
+    DbWarehouse db = new DbWarehouse();
+    db.businessUnitCode = warehouse.businessUnitCode;
+    db.location = warehouse.location;
+    db.capacity = warehouse.capacity;
+    db.stock = warehouse.stock;
+    db.createdAt = warehouse.createdAt;
+    db.archivedAt = warehouse.archivedAt;
+    persist(db);
   }
 
   @Override
   public void update(Warehouse warehouse) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'replace'");
+    DbWarehouse db =
+        find("businessUnitCode = ?1 and archivedAt is null", warehouse.businessUnitCode)
+            .firstResult();
+    if (db == null) return;
+    db.location = warehouse.location;
+    db.capacity = warehouse.capacity;
+    db.stock = warehouse.stock;
+    db.archivedAt = warehouse.archivedAt;
   }
 
   @Override
   public void remove(Warehouse warehouse) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'remove'");
+    delete("businessUnitCode = ?1", warehouse.businessUnitCode);
   }
 
   @Override
   public Warehouse findByBusinessUnitCode(String buCode) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'findById'");
+    return find("businessUnitCode = ?1 and archivedAt is null", buCode)
+        .firstResultOptional()
+        .map(DbWarehouse::toWarehouse)
+        .orElse(null);
+  }
+
+  @Override
+  public List<Warehouse> findActiveByLocation(String location) {
+    return find("location = ?1 and archivedAt is null", location).stream()
+        .map(DbWarehouse::toWarehouse)
+        .toList();
   }
 }

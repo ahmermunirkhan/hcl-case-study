@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -27,6 +26,7 @@ import org.jboss.logging.Logger;
 @Consumes("application/json")
 public class StoreResource {
 
+  @Inject StoreService storeService;
   @Inject LegacyStoreManagerGateway legacyStoreManagerGateway;
 
   private static final Logger LOGGER = Logger.getLogger(StoreResource.class.getName());
@@ -47,77 +47,41 @@ public class StoreResource {
   }
 
   @POST
-  @Transactional
   public Response create(Store store) {
     if (store.id != null) {
       throw new WebApplicationException("Id was invalidly set on request.", 422);
     }
-
-    store.persist();
-
-    legacyStoreManagerGateway.createStoreOnLegacySystem(store);
-
-    return Response.ok(store).status(201).build();
+    Store persisted = storeService.persistNew(store);
+    legacyStoreManagerGateway.createStoreOnLegacySystem(persisted);
+    return Response.ok(persisted).status(201).build();
   }
 
   @PUT
   @Path("{id}")
-  @Transactional
   public Store update(Long id, Store updatedStore) {
     if (updatedStore.name == null) {
       throw new WebApplicationException("Store Name was not set on request.", 422);
     }
-
-    Store entity = Store.findById(id);
-
-    if (entity == null) {
-      throw new WebApplicationException("Store with id of " + id + " does not exist.", 404);
-    }
-
-    entity.name = updatedStore.name;
-    entity.quantityProductsInStock = updatedStore.quantityProductsInStock;
-
+    Store updated = storeService.updateEntity(id, updatedStore);
     legacyStoreManagerGateway.updateStoreOnLegacySystem(updatedStore);
-
-    return entity;
+    return updated;
   }
 
   @PATCH
   @Path("{id}")
-  @Transactional
   public Store patch(Long id, Store updatedStore) {
     if (updatedStore.name == null) {
       throw new WebApplicationException("Store Name was not set on request.", 422);
     }
-
-    Store entity = Store.findById(id);
-
-    if (entity == null) {
-      throw new WebApplicationException("Store with id of " + id + " does not exist.", 404);
-    }
-
-    if (entity.name != null) {
-      entity.name = updatedStore.name;
-    }
-
-    if (entity.quantityProductsInStock != 0) {
-      entity.quantityProductsInStock = updatedStore.quantityProductsInStock;
-    }
-
+    Store patched = storeService.patchEntity(id, updatedStore);
     legacyStoreManagerGateway.updateStoreOnLegacySystem(updatedStore);
-
-    return entity;
+    return patched;
   }
 
   @DELETE
   @Path("{id}")
-  @Transactional
   public Response delete(Long id) {
-    Store entity = Store.findById(id);
-    if (entity == null) {
-      throw new WebApplicationException("Store with id of " + id + " does not exist.", 404);
-    }
-    entity.delete();
+    storeService.deleteEntity(id);
     return Response.status(204).build();
   }
 
