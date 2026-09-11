@@ -1,10 +1,13 @@
 package com.fulfilment.application.monolith.warehouses.domain.usecases;
 
+import com.fulfilment.application.monolith.warehouses.domain.events.WarehouseCreatedEvent;
 import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
 import com.fulfilment.application.monolith.warehouses.domain.ports.CreateWarehouseOperation;
 import com.fulfilment.application.monolith.warehouses.domain.ports.LocationResolver;
 import com.fulfilment.application.monolith.warehouses.domain.ports.WarehouseStore;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Event;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,6 +17,8 @@ public class CreateWarehouseUseCase implements CreateWarehouseOperation {
 
   private final WarehouseStore warehouseStore;
   private final LocationResolver locationResolver;
+
+  @Inject Event<WarehouseCreatedEvent> warehouseCreatedEvent;
 
   public CreateWarehouseUseCase(WarehouseStore warehouseStore, LocationResolver locationResolver) {
     this.warehouseStore = warehouseStore;
@@ -55,5 +60,8 @@ public class CreateWarehouseUseCase implements CreateWarehouseOperation {
 
     warehouse.createdAt = LocalDateTime.now();
     warehouseStore.create(warehouse);
+    if (warehouseCreatedEvent != null) {
+      warehouseCreatedEvent.fire(new WarehouseCreatedEvent(warehouse));
+    }
   }
 }

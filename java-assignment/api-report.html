@@ -160,12 +160,13 @@ pre{margin:0;padding:10px;font-family:'JetBrains Mono',monospace;font-size:11px;
   <div class="header">
     <div>
       <div class="htitle">API Validation Report</div>
-      <div class="hmeta">HCL Java Assignment · Quarkus 3.13.3 · H2 in-memory · 2026-09-10</div>
+      <div class="hmeta">HCL Java Assignment · Quarkus 3.13.3 · H2 in-memory · Live verified 2026-09-11</div>
     </div>
     <div class="stats">
       <div class="stat"><div class="sv">43</div><div class="sl">Endpoints</div></div>
       <div class="stat"><div class="sv">43</div><div class="sl">Passing</div></div>
       <div class="stat"><div class="sv" style="color:var(--note)">4</div><div class="sl">API Groups</div></div>
+      <div class="stat"><div class="sv" style="color:var(--ok);font-size:16px">✓ Live</div><div class="sl">Verified</div></div>
     </div>
   </div>
 
@@ -187,9 +188,9 @@ pre{margin:0;padding:10px;font-family:'JetBrains Mono',monospace;font-size:11px;
           <div class="code-block"><div class="code-label">Request</div><pre>GET /product
 Accept: application/json</pre></div>
           <div class="code-block"><div class="code-label">Response · 200 OK</div><pre>[
-  { "id": 1, "name": "TONSTAD", "stock": 10 },
-  { "id": 2, "name": "KALLAX",  "stock":  5 },
-  { "id": 3, "name": "BESTÅ",   "stock":  3 }
+  { "id": 1, "name": "TONSTAD", "description": null, "price": null, "stock": 10 },
+  { "id": 2, "name": "KALLAX",  "description": null, "price": null, "stock":  5 },
+  { "id": 3, "name": "BESTÅ",   "description": null, "price": null, "stock":  3 }
 ]</pre></div>
         </div>
       </div>
@@ -197,7 +198,7 @@ Accept: application/json</pre></div>
       <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method get">GET</span><span class="ep-path">/product/{id}</span><span class="ep-desc">Get single product</span><span class="status s2xx">200</span><span class="check">✓</span><span class="chevron">▼</span></div>
         <div class="ep-body">
           <div class="code-block"><div class="code-label">Request</div><pre>GET /product/3</pre></div>
-          <div class="code-block"><div class="code-label">Response · 200 OK</div><pre>{ "id": 3, "name": "BESTÅ", "stock": 3 }</pre></div>
+          <div class="code-block"><div class="code-label">Response · 200 OK</div><pre>{ "id": 1, "name": "TONSTAD", "description": null, "price": null, "stock": 10 }</pre></div>
         </div>
       </div>
 
@@ -214,7 +215,7 @@ Accept: application/json</pre></div>
 Content-Type: application/json
 
 { "name": "VALIDATION_PRODUCT", "stock": 10 }</pre></div>
-          <div class="code-block"><div class="code-label">Response · 201 Created</div><pre>{ "id": 4, "name": "VALIDATION_PRODUCT", "stock": 10 }</pre></div>
+          <div class="code-block"><div class="code-label">Response · 201 Created</div><pre>{ "id": 4, "name": "VALIDATION_PRODUCT", "description": null, "price": null, "stock": 10 }</pre></div>
         </div>
       </div>
 
@@ -234,7 +235,7 @@ Content-Type: application/json
 Content-Type: application/json
 
 { "name": "PRODUCT_UPDATED", "stock": 7, "description": "updated" }</pre></div>
-          <div class="code-block"><div class="code-label">Response · 200 OK</div><pre>{ "id": 4, "name": "PRODUCT_UPDATED", "stock": 7 }</pre></div>
+          <div class="code-block"><div class="code-label">Response · 200 OK</div><pre>{ "id": 4, "name": "PRODUCT_UPDATED", "description": null, "price": null, "stock": 7 }</pre></div>
         </div>
       </div>
 

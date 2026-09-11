@@ -1,9 +1,12 @@
 package com.fulfilment.application.monolith.warehouses.domain.usecases;
 
+import com.fulfilment.application.monolith.warehouses.domain.events.WarehouseArchivedEvent;
 import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
 import com.fulfilment.application.monolith.warehouses.domain.ports.ArchiveWarehouseOperation;
 import com.fulfilment.application.monolith.warehouses.domain.ports.WarehouseStore;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Event;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 import java.time.LocalDateTime;
 
@@ -11,6 +14,8 @@ import java.time.LocalDateTime;
 public class ArchiveWarehouseUseCase implements ArchiveWarehouseOperation {
 
   private final WarehouseStore warehouseStore;
+
+  @Inject Event<WarehouseArchivedEvent> warehouseArchivedEvent;
 
   public ArchiveWarehouseUseCase(WarehouseStore warehouseStore) {
     this.warehouseStore = warehouseStore;
@@ -27,5 +32,8 @@ public class ArchiveWarehouseUseCase implements ArchiveWarehouseOperation {
     }
     existing.archivedAt = LocalDateTime.now();
     warehouseStore.update(existing);
+    if (warehouseArchivedEvent != null) {
+      warehouseArchivedEvent.fire(new WarehouseArchivedEvent(existing));
+    }
   }
 }

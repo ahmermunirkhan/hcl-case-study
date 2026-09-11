@@ -1,7 +1,7 @@
 package com.fulfilment.application.monolith.allocation.adapters.restapi;
 
-import com.fulfilment.application.monolith.allocation.adapters.database.AllocationRepository;
 import com.fulfilment.application.monolith.allocation.domain.models.WarehouseAllocation;
+import com.fulfilment.application.monolith.allocation.domain.ports.AllocationStore;
 import com.fulfilment.application.monolith.allocation.domain.usecases.AllocateWarehouseUseCase;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
@@ -21,23 +21,23 @@ import java.util.List;
 public class AllocationResource {
 
   @Inject AllocateWarehouseUseCase allocateWarehouseUseCase;
-  @Inject AllocationRepository allocationRepository;
+  @Inject AllocationStore allocationStore;
 
   @GET
   public List<WarehouseAllocation> list() {
-    return allocationRepository.listAll();
+    return allocationStore.getAll();
   }
 
   @GET
   @Path("/warehouse/{buCode}")
   public List<WarehouseAllocation> listByWarehouse(@PathParam("buCode") String buCode) {
-    return allocationRepository.list("warehouseBusinessUnitCode = ?1", buCode);
+    return allocationStore.findByWarehouse(buCode);
   }
 
   @GET
   @Path("/store/{storeId}")
   public List<WarehouseAllocation> listByStore(@PathParam("storeId") Long storeId) {
-    return allocationRepository.list("storeId = ?1", storeId);
+    return allocationStore.findByStore(storeId);
   }
 
   @POST

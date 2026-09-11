@@ -1,10 +1,13 @@
 package com.fulfilment.application.monolith.warehouses.domain.usecases;
 
+import com.fulfilment.application.monolith.warehouses.domain.events.WarehouseReplacedEvent;
 import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
 import com.fulfilment.application.monolith.warehouses.domain.ports.LocationResolver;
 import com.fulfilment.application.monolith.warehouses.domain.ports.ReplaceWarehouseOperation;
 import com.fulfilment.application.monolith.warehouses.domain.ports.WarehouseStore;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Event;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 import java.time.LocalDateTime;
@@ -17,6 +20,8 @@ public class ReplaceWarehouseUseCase implements ReplaceWarehouseOperation {
   private final WarehouseStore warehouseStore;
   private final LocationResolver locationResolver;
 
+  @Inject Event<WarehouseReplacedEvent> warehouseReplacedEvent;
+
   public ReplaceWarehouseUseCase(
       WarehouseStore warehouseStore, LocationResolver locationResolver) {
     this.warehouseStore = warehouseStore;
@@ -25,8 +30,7 @@ public class ReplaceWarehouseUseCase implements ReplaceWarehouseOperation {
 
   @Override
   public void replace(Warehouse newWarehouse) {
-    Warehouse existing =
-        warehouseStore.findByBusinessUnitCode(newWarehouse.businessUnitCode);
+    Warehouse existing = warehouseStore.findByBusinessUnitCode(newWarehouse.businessUnitCode);
     if (existing == null) {
       throw new NotFoundException(
           "Warehouse with business unit code '"
@@ -84,5 +88,9 @@ public class ReplaceWarehouseUseCase implements ReplaceWarehouseOperation {
 
     newWarehouse.createdAt = LocalDateTime.now();
     warehouseStore.create(newWarehouse);
+
+    if (warehouseReplacedEvent != null) {
+      warehouseReplacedEvent.fire(new WarehouseReplacedEvent(existing, newWarehouse));
+    }
   }
 }
