@@ -57,7 +57,7 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-jdbc-h2</artifactId>
-            <scope>test</scope>
+            <!-- no scope: available in dev mode (%dev profile) and test; excluded from prod via %prod config -->
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>

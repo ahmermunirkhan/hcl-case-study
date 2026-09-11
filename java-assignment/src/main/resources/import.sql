@@ -16,4 +16,4 @@ INSERT INTO warehouse(id, businessUnitCode, location, capacity, stock, createdAt
 VALUES (3, 'MWH.023', 'TILBURG-001', 30, 27, '2021-02-01', null);
 ALTER SEQUENCE warehouse_seq RESTART WITH 4;
 
-ALTER SEQUENCE fulfillment_association_seq RESTART WITH 1;
+ALTER SEQUENCE warehouse_allocation_seq RESTART WITH 1;

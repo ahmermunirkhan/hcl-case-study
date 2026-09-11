@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HCL Assignment API Report</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root {
+  --bg:#EEF2F7; --surface:#FFFFFF; --surface-2:#F5F7FA; --surface-3:#EDF0F5;
+  --accent:#2563EB; --accent-dim:#DBEAFE; --text:#0F172A; --muted:#64748B;
+  --border:#CBD5E1; --border-light:#E2E8F0;
+  --ok:#16A34A; --ok-bg:#DCFCE7; --ok-dim:#BBF7D0;
+  --err:#DC2626; --err-bg:#FEE2E2;
+  --warn:#B45309; --warn-bg:#FEF3C7;
+  --note:#7C3AED; --note-bg:#EDE9FE;
+  --m-get:#1D4ED8; --m-get-bg:#DBEAFE;
+  --m-post:#15803D; --m-post-bg:#DCFCE7;
+  --m-put:#B45309; --m-put-bg:#FEF3C7;
+  --m-patch:#7C3AED; --m-patch-bg:#EDE9FE;
+  --m-del:#DC2626; --m-del-bg:#FEE2E2;
+  --shadow:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.05);
+  --nav-w:220px;
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0C111D; --surface:#111927; --surface-2:#161F2E; --surface-3:#1C2637;
+  --accent:#3B82F6; --accent-dim:#1E3A5F; --text:#E2E8F0; --muted:#94A3B8;
+  --border:#1E293B; --border-light:#243146;
+  --ok:#4ADE80; --ok-bg:#052E16; --ok-dim:#14532D;
+  --err:#F87171; --err-bg:#1C0000;
+  --warn:#FCD34D; --warn-bg:#1C1400;
+  --note:#C4B5FD; --note-bg:#1A0E3A;
+  --m-get:#93C5FD; --m-get-bg:#1E3A5F;
+  --m-post:#86EFAC; --m-post-bg:#052E16;
+  --m-put:#FCD34D; --m-put-bg:#1C1400;
+  --m-patch:#C4B5FD; --m-patch-bg:#1A0E3A;
+  --m-del:#F87171; --m-del-bg:#1C0000;
+}}
+:root[data-theme="dark"]{
+  --bg:#0C111D; --surface:#111927; --surface-2:#161F2E; --surface-3:#1C2637;
+  --accent:#3B82F6; --accent-dim:#1E3A5F; --text:#E2E8F0; --muted:#94A3B8;
+  --border:#1E293B; --border-light:#243146;
+  --ok:#4ADE80; --ok-bg:#052E16; --ok-dim:#14532D;
+  --err:#F87171; --err-bg:#1C0000;
+  --warn:#FCD34D; --warn-bg:#1C1400;
+  --note:#C4B5FD; --note-bg:#1A0E3A;
+  --m-get:#93C5FD; --m-get-bg:#1E3A5F;
+  --m-post:#86EFAC; --m-post-bg:#052E16;
+  --m-put:#FCD34D; --m-put-bg:#1C1400;
+  --m-patch:#C4B5FD; --m-patch-bg:#1A0E3A;
+  --m-del:#F87171; --m-del-bg:#1C0000;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);margin:0;padding:0;font-size:14px;line-height:1.55}
+
+.layout{display:flex;min-height:100vh}
+.nav{width:var(--nav-w);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:10}
+.main{margin-left:var(--nav-w);flex:1;display:flex;flex-direction:column}
+
+.nav-brand{padding:20px 18px 16px;border-bottom:1px solid var(--border)}
+.nav-title{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;letter-spacing:.02em;color:var(--text);margin:0 0 2px}
+.nav-sub{font-size:11px;color:var(--muted)}
+.nav-section{padding:14px 12px 6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 14px;border-radius:6px;margin:1px 6px;cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;transition:background .12s,color .12s}
+.nav-item:hover{background:var(--surface-2);color:var(--text)}
+.nav-item.active{background:var(--accent-dim);color:var(--accent)}
+.nav-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-product{background:#2563EB}.dot-store{background:#15803D}.dot-warehouse{background:#B45309}.dot-allocation{background:#7C3AED}
+.nav-count{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);background:var(--surface-2);border-radius:10px;padding:1px 6px}
+
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:20px 28px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.htitle{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;margin:0 0 3px;letter-spacing:-.2px}
+.hmeta{font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.stats{display:flex;gap:10px;flex-wrap:wrap}
+.stat{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;text-align:right}
+.sv{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;line-height:1;color:var(--ok)}
+.sl{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:2px;font-weight:600}
+
+.content{padding:24px 28px 48px;flex:1}
+.api-section{margin-bottom:40px;scroll-margin-top:16px}
+.section-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.section-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.section-name{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700}
+.section-path{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);margin-left:4px}
+.section-badge{margin-left:auto;font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px;background:var(--ok-bg);color:var(--ok)}
+.bonus-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 7px;border-radius:10px;background:var(--note-bg);color:var(--note);margin-left:6px}
+
+.ep{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px;box-shadow:var(--shadow)}
+.ep-head{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;user-select:none}
+.ep-head:hover{background:var(--surface-2)}
+.method{font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;padding:3px 8px;border-radius:5px;min-width:52px;text-align:center;letter-spacing:.03em;flex-shrink:0}
+.get{color:var(--m-get);background:var(--m-get-bg)}
+.post{color:var(--m-post);background:var(--m-post-bg)}
+.put{color:var(--m-put);background:var(--m-put-bg)}
+.patch{color:var(--m-patch);background:var(--m-patch-bg)}
+.del{color:var(--m-del);background:var(--m-del-bg)}
+.ep-path{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;color:var(--text);flex:1}
+.ep-desc{font-size:12px;color:var(--muted);margin-right:8px}
+.status{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;padding:2px 7px;border-radius:4px;flex-shrink:0}
+.s2xx{background:var(--ok-bg);color:var(--ok)}
+.s4xx{background:var(--err-bg);color:var(--err)}
+.s4xxw{background:var(--warn-bg);color:var(--warn)}
+.check{font-size:12px;color:var(--ok);flex-shrink:0}
+.chevron{font-size:10px;color:var(--muted);flex-shrink:0;transition:transform .2s}
+.ep.open .chevron{transform:rotate(180deg)}
+
+.ep-body{display:none;border-top:1px solid var(--border-light);padding:14px}
+.ep.open .ep-body{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:700px){.ep.open .ep-body{grid-template-columns:1fr}}
+.code-block{background:var(--surface-3);border:1px solid var(--border-light);border-radius:6px;overflow:hidden}
+.code-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:6px 10px;border-bottom:1px solid var(--border-light);background:var(--surface-2)}
+pre{margin:0;padding:10px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.65;overflow-x:auto;color:var(--text)}
+
+.constraints{background:var(--note-bg);border:1px solid color-mix(in srgb, var(--note) 30%, transparent);border-radius:8px;padding:12px 16px;margin-bottom:14px}
+.constraints h4{font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;color:var(--note);margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em}
+.constraints ol{margin:0;padding-left:18px;font-size:12px;line-height:1.8;color:var(--text)}
+.constraints code{font-family:'JetBrains Mono',monospace;font-size:11px;background:color-mix(in srgb, var(--note) 12%, transparent);padding:1px 4px;border-radius:3px}
+
+@media(max-width:760px){
+  .nav{width:100%;position:static;border-right:none;border-bottom:1px solid var(--border);display:flex;flex-direction:row;overflow-x:auto}
+  .main{margin-left:0}
+  .nav-brand{display:none}
+  .nav-section{display:none}
+  .nav-item{white-space:nowrap;padding:10px 12px}
+  .content{padding:16px 14px 32px}
+  .header{padding:16px 14px}
+  .layout{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+<nav class="nav">
+  <div class="nav-brand">
+    <div class="nav-title">HCL Assignment</div>
+    <div class="nav-sub">API Validation Report</div>
+  </div>
+  <div class="nav-section">APIs</div>
+  <a class="nav-item active" href="#product" onclick="activate(this)">
+    <span class="nav-dot dot-product"></span>Product
+    <span class="nav-count">10</span>
+  </a>
+  <a class="nav-item" href="#store" onclick="activate(this)">
+    <span class="nav-dot dot-store"></span>Store
+    <span class="nav-count">13</span>
+  </a>
+  <a class="nav-item" href="#warehouse" onclick="activate(this)">
+    <span class="nav-dot dot-warehouse"></span>Warehouse
+    <span class="nav-count">10</span>
+  </a>
+  <a class="nav-item" href="#allocation" onclick="activate(this)">
+    <span class="nav-dot dot-allocation"></span>Allocation
+    <span class="nav-count">10</span>
+  </a>
+</nav>
+
+<div class="main">
+  <div class="header">
+    <div>
+      <div class="htitle">API Validation Report</div>
+      <div class="hmeta">HCL Java Assignment · Quarkus 3.13.3 · H2 in-memory · 2026-09-10</div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="sv">43</div><div class="sl">Endpoints</div></div>
+      <div class="stat"><div class="sv">43</div><div class="sl">Passing</div></div>
+      <div class="stat"><div class="sv" style="color:var(--note)">4</div><div class="sl">API Groups</div></div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ PRODUCT ══ -->
+    <div class="api-section" id="product">
+      <div class="section-header">
+        <div class="section-icon" style="background:#DBEAFE">📦</div>
+        <div>
+          <span class="section-name">Product</span>
+          <span class="section-path">/product</span>
+        </div>
+        <span class="section-badge">10 / 10 ✓</span>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method get">GET</span><span class="ep-path">/product</span><span class="ep-desc">List all products</span><span class="status s2xx">200</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>GET /product
+Accept: application/json</pre></div>
+          <div class="code-block"><div class="code-label">Response · 200 OK</div><pre>[
+  { "id": 1, "name": "TONSTAD", "stock": 10 },
+  { "id": 2, "name": "KALLAX",  "stock":  5 },
+  { "id": 3, "name": "BESTÅ",   "stock":  3 }
+]</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method get">GET</span><span class="ep-path">/product/{id}</span><span class="ep-desc">Get single product</span><span class="status s2xx">200</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>GET /product/3</pre></div>
+          <div class="code-block"><div class="code-label">Response · 200 OK</div><pre>{ "id": 3, "name": "BESTÅ", "stock": 3 }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method get">GET</span><span class="ep-path">/product/{id}</span><span class="ep-desc">Non-existent product</span><span class="status s4xx">404</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>GET /product/99999</pre></div>
+          <div class="code-block"><div class="code-label">Response · 404 Not Found</div><pre>{ "code": 404, "error": "Product not found" }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method post">POST</span><span class="ep-path">/product</span><span class="ep-desc">Create product</span><span class="status s2xx">201</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>POST /product
+Content-Type: application/json
+
+{ "name": "VALIDATION_PRODUCT", "stock": 10 }</pre></div>
+          <div class="code-block"><div class="code-label">Response · 201 Created</div><pre>{ "id": 4, "name": "VALIDATION_PRODUCT", "stock": 10 }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method post">POST</span><span class="ep-path">/product</span><span class="ep-desc">Preset id rejected</span><span class="status s4xxw">422</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>POST /product
+Content-Type: application/json
+
+{ "id": 999, "name": "BAD", "stock": 0 }</pre></div>
+          <div class="code-block"><div class="code-label">Response · 422 Unprocessable</div><pre>{ "code": 422, "error": "Id was invalidly set on request." }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method put">PUT</span><span class="ep-path">/product/{id}</span><span class="ep-desc">Full update</span><span class="status s2xx">200</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>PUT /product/4
+Content-Type: application/json
+
+{ "name": "PRODUCT_UPDATED", "stock": 7, "description": "updated" }</pre></div>
+          <div class="code-block"><div class="code-label">Response · 200 OK</div><pre>{ "id": 4, "name": "PRODUCT_UPDATED", "stock": 7 }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method put">PUT</span><span class="ep-path">/product/{id}</span><span class="ep-desc">Null name rejected</span><span class="status s4xxw">422</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>PUT /product/99999
+Content-Type: application/json
+
+{ "stock": 5 }</pre></div>
+          <div class="code-block"><div class="code-label">Response · 422 Unprocessable</div><pre>{ "code": 422, "error": "Product Name was not set on request." }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method put">PUT</span><span class="ep-path">/product/{id}</span><span class="ep-desc">Non-existent product</span><span class="status s4xx">404</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>PUT /product/99999
+Content-Type: application/json
+
+{ "name": "GHOST", "stock": 0 }</pre></div>
+          <div class="code-block"><div class="code-label">Response · 404 Not Found</div><pre>{ "code": 404, "error": "Product not found" }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method del">DELETE</span><span class="ep-path">/product/{id}</span><span class="ep-desc">Delete product</span><span class="status s2xx">204</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>DELETE /product/4</pre></div>
+          <div class="code-block"><div class="code-label">Response · 204 No Content</div><pre>(empty body)</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method del">DELETE</span><span class="ep-path">/product/{id}</span><span class="ep-desc">Non-existent product</span><span class="status s4xx">404</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>DELETE /product/99999</pre></div>
+          <div class="code-block"><div class="code-label">Response · 404 Not Found</div><pre>{ "code": 404, "error": "Product not found" }</pre></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ STORE ══ -->
+    <div class="api-section" id="store">
+      <div class="section-header">
+        <div class="section-icon" style="background:#DCFCE7">🏪</div>
+        <div>
+          <span class="section-name">Store</span>
+          <span class="section-path">/store</span>
+        </div>
+        <span class="section-badge">13 / 13 ✓</span>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method get">GET</span><span class="ep-path">/store</span><span class="ep-desc">List all stores</span><span class="status s2xx">200</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>GET /store</pre></div>
+          <div class="code-block"><div class="code-label">Response · 200 OK</div><pre>[
+  { "id": 1, "name": "TONSTAD", "quantityProductsInStock": 10 },
+  { "id": 2, "name": "KALLAX",  "quantityProductsInStock":  5 },
+  { "id": 3, "name": "BESTÅ",   "quantityProductsInStock":  3 }
+]</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method get">GET</span><span class="ep-path">/store/{id}</span><span class="ep-desc">Get single store</span><span class="status s2xx">200</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>GET /store/1</pre></div>
+          <div class="code-block"><div class="code-label">Response · 200 OK</div><pre>{ "id": 1, "name": "TONSTAD", "quantityProductsInStock": 10 }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method get">GET</span><span class="ep-path">/store/{id}</span><span class="ep-desc">Non-existent store</span><span class="status s4xx">404</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>GET /store/999999</pre></div>
+          <div class="code-block"><div class="code-label">Response · 404 Not Found</div><pre>{ "code": 404, "error": "Store with id of 999999 does not exist." }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method post">POST</span><span class="ep-path">/store</span><span class="ep-desc">Create store</span><span class="status s2xx">201</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>POST /store
+Content-Type: application/json
+
+{ "name": "VALIDATION_STORE", "quantityProductsInStock": 5 }</pre></div>
+          <div class="code-block"><div class="code-label">Response · 201 Created</div><pre>{ "id": 4, "name": "VALIDATION_STORE", "quantityProductsInStock": 5 }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method post">POST</span><span class="ep-path">/store</span><span class="ep-desc">Preset id rejected</span><span class="status s4xxw">422</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>POST /store
+Content-Type: application/json
+
+{ "id": 999, "name": "BAD", "quantityProductsInStock": 0 }</pre></div>
+          <div class="code-block"><div class="code-label">Response · 422 Unprocessable</div><pre>{ "code": 422, "error": "Id was invalidly set on request." }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method put">PUT</span><span class="ep-path">/store/{id}</span><span class="ep-desc">Full update</span><span class="status s2xx">200</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>PUT /store/1
+Content-Type: application/json
+
+{ "name": "STORE_UPDATED", "quantityProductsInStock": 20 }</pre></div>
+          <div class="code-block"><div class="code-label">Response · 200 OK</div><pre>{ "id": 1, "name": "STORE_UPDATED", "quantityProductsInStock": 20 }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method put">PUT</span><span class="ep-path">/store/{id}</span><span class="ep-desc">Null name rejected</span><span class="status s4xxw">422</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>PUT /store/1
+Content-Type: application/json
+
+{ "quantityProductsInStock": 5 }</pre></div>
+          <div class="code-block"><div class="code-label">Response · 422 Unprocessable</div><pre>{ "code": 422, "error": "Store Name was not set on request." }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method put">PUT</span><span class="ep-path">/store/{id}</span><span class="ep-desc">Non-existent store</span><span class="status s4xx">404</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>PUT /store/999999
+Content-Type: application/json
+
+{ "name": "GHOST", "quantityProductsInStock": 0 }</pre></div>
+          <div class="code-block"><div class="code-label">Response · 404 Not Found</div><pre>{ "code": 404, "error": "Store with id of 999999 does not exist." }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method patch">PATCH</span><span class="ep-path">/store/{id}</span><span class="ep-desc">Partial update</span><span class="status s2xx">200</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>PATCH /store/1
+Content-Type: application/json
+
+{ "name": "STORE_PATCHED", "quantityProductsInStock": 25 }</pre></div>
+          <div class="code-block"><div class="code-label">Response · 200 OK</div><pre>{ "id": 1, "name": "STORE_PATCHED", "quantityProductsInStock": 25 }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method patch">PATCH</span><span class="ep-path">/store/{id}</span><span class="ep-desc">Null name rejected</span><span class="status s4xxw">422</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>PATCH /store/1
+Content-Type: application/json
+
+{ "quantityProductsInStock": 5 }</pre></div>
+          <div class="code-block"><div class="code-label">Response · 422 Unprocessable</div><pre>{ "code": 422, "error": "Store Name was not set on request." }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method patch">PATCH</span><span class="ep-path">/store/{id}</span><span class="ep-desc">Non-existent store</span><span class="status s4xx">404</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>PATCH /store/999999
+Content-Type: application/json
+
+{ "name": "GHOST", "quantityProductsInStock": 0 }</pre></div>
+          <div class="code-block"><div class="code-label">Response · 404 Not Found</div><pre>{ "code": 404, "error": "Store with id of 999999 does not exist." }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method del">DELETE</span><span class="ep-path">/store/{id}</span><span class="ep-desc">Delete store</span><span class="status s2xx">204</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>DELETE /store/4</pre></div>
+          <div class="code-block"><div class="code-label">Response · 204 No Content</div><pre>(empty body)</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method del">DELETE</span><span class="ep-path">/store/{id}</span><span class="ep-desc">Non-existent store</span><span class="status s4xx">404</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>DELETE /store/999999</pre></div>
+          <div class="code-block"><div class="code-label">Response · 404 Not Found</div><pre>{ "code": 404, "error": "Store with id of 999999 does not exist." }</pre></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ WAREHOUSE ══ -->
+    <div class="api-section" id="warehouse">
+      <div class="section-header">
+        <div class="section-icon" style="background:#FEF3C7">🏭</div>
+        <div>
+          <span class="section-name">Warehouse</span>
+          <span class="section-path">/warehouse</span>
+        </div>
+        <span class="section-badge">10 / 10 ✓</span>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method get">GET</span><span class="ep-path">/warehouse</span><span class="ep-desc">List all active warehouses</span><span class="status s2xx">200</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>GET /warehouse</pre></div>
+          <div class="code-block"><div class="code-label">Response · 200 OK</div><pre>[
+  { "businessUnitCode": "MWH.001", "location": "ZWOLLE-001",    "capacity": 100, "stock": 10 },
+  { "businessUnitCode": "MWH.012", "location": "AMSTERDAM-001", "capacity":  50, "stock":  5 },
+  { "businessUnitCode": "MWH.023", "location": "TILBURG-001",   "capacity":  30, "stock": 27 }
+]</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method get">GET</span><span class="ep-path">/warehouse/{buCode}</span><span class="ep-desc">Get single warehouse</span><span class="status s2xx">200</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>GET /warehouse/MWH.001</pre></div>
+          <div class="code-block"><div class="code-label">Response · 200 OK</div><pre>{ "businessUnitCode": "MWH.001", "location": "ZWOLLE-001", "capacity": 100, "stock": 10 }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method get">GET</span><span class="ep-path">/warehouse/{buCode}</span><span class="ep-desc">Non-existent / archived</span><span class="status s4xx">404</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>GET /warehouse/WH.DOES.NOT.EXIST</pre></div>
+          <div class="code-block"><div class="code-label">Response · 404 Not Found</div><pre>{ "code": 404, "error": "Warehouse with business unit code 'WH.DOES.NOT.EXIST' not found or already archived." }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method post">POST</span><span class="ep-path">/warehouse</span><span class="ep-desc">Create warehouse</span><span class="status s2xx">201</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>POST /warehouse
+Content-Type: application/json
+
+{
+  "businessUnitCode": "MWH.VAL",
+  "location": "HELMOND-001",
+  "capacity": 40,
+  "stock": 10
+}</pre></div>
+          <div class="code-block"><div class="code-label">Response · 201 Created</div><pre>{ "businessUnitCode": "MWH.VAL", "location": "HELMOND-001", "capacity": 40, "stock": 10 }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method post">POST</span><span class="ep-path">/warehouse</span><span class="ep-desc">Invalid location</span><span class="status s4xx">400</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>POST /warehouse
+Content-Type: application/json
+
+{ "businessUnitCode": "MWH.BAD", "location": "NOWHERE-999", "capacity": 100, "stock": 0 }</pre></div>
+          <div class="code-block"><div class="code-label">Response · 400 Bad Request</div><pre>{ "code": 400, "error": "Location 'NOWHERE-999' is not valid." }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method post">POST</span><span class="ep-path">/warehouse</span><span class="ep-desc">Location at capacity</span><span class="status s4xx">400</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>POST /warehouse
+Content-Type: application/json
+
+{ "businessUnitCode": "MWH.EXTRA", "location": "ZWOLLE-001", "capacity": 40, "stock": 0 }</pre></div>
+          <div class="code-block"><div class="code-label">Response · 400 Bad Request</div><pre>{ "code": 400, "error": "Maximum number of warehouses at location 'ZWOLLE-001' has been reached." }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method post">POST</span><span class="ep-path">/warehouse/{buCode}/replacement</span><span class="ep-desc">Replace warehouse</span><span class="status s2xx">200</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>POST /warehouse/MWH.VAL/replacement
+Content-Type: application/json
+
+{ "businessUnitCode": "MWH.VAL", "location": "HELMOND-001", "capacity": 45, "stock": 10 }</pre></div>
+          <div class="code-block"><div class="code-label">Response · 200 OK</div><pre>{ "businessUnitCode": "MWH.VAL", "location": "HELMOND-001", "capacity": 45, "stock": 10 }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method post">POST</span><span class="ep-path">/warehouse/{buCode}/replacement</span><span class="ep-desc">Stock mismatch rejected</span><span class="status s4xx">400</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>POST /warehouse/MWH.VAL/replacement
+Content-Type: application/json
+
+{ "businessUnitCode": "MWH.VAL", "location": "HELMOND-001", "capacity": 45, "stock": 99 }</pre></div>
+          <div class="code-block"><div class="code-label">Response · 400 Bad Request</div><pre>{ "code": 400, "error": "Stock of the new warehouse must match the stock of the warehouse being replaced." }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method del">DELETE</span><span class="ep-path">/warehouse/{buCode}</span><span class="ep-desc">Archive warehouse</span><span class="status s2xx">204</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>DELETE /warehouse/MWH.VAL</pre></div>
+          <div class="code-block"><div class="code-label">Response · 204 No Content</div><pre>(empty body — warehouse soft-deleted, archivedAt timestamp set)</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method del">DELETE</span><span class="ep-path">/warehouse/{buCode}</span><span class="ep-desc">Non-existent warehouse</span><span class="status s4xx">404</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>DELETE /warehouse/WH.NONEXISTENT.XYZ</pre></div>
+          <div class="code-block"><div class="code-label">Response · 404 Not Found</div><pre>{ "code": 404, "error": "Warehouse with business unit code 'WH.NONEXISTENT.XYZ' not found or already archived." }</pre></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ALLOCATION ══ -->
+    <div class="api-section" id="allocation">
+      <div class="section-header">
+        <div class="section-icon" style="background:#EDE9FE">🔗</div>
+        <div>
+          <span class="section-name">Allocation</span>
+          <span class="section-path">/allocation</span>
+          <span class="bonus-tag">BONUS</span>
+        </div>
+        <span class="section-badge">10 / 10 ✓</span>
+      </div>
+
+      <div class="constraints">
+        <h4>Business Constraints</h4>
+        <ol>
+          <li>Each Product can be allocated to at most <code>2</code> Warehouses per Store.</li>
+          <li>Each Store can be served by at most <code>3</code> distinct Warehouses.</li>
+          <li>Each Warehouse can store at most <code>5</code> types of Products.</li>
+        </ol>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method get">GET</span><span class="ep-path">/allocation</span><span class="ep-desc">List all allocations</span><span class="status s2xx">200</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>GET /allocation</pre></div>
+          <div class="code-block"><div class="code-label">Response · 200 OK</div><pre>[
+  { "id": 1, "warehouseBusinessUnitCode": "MWH.023", "productId": 1, "storeId": 1 },
+  { "id": 2, "warehouseBusinessUnitCode": "MWH.012", "productId": 1, "storeId": 1 }
+]</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method get">GET</span><span class="ep-path">/allocation/warehouse/{buCode}</span><span class="ep-desc">Allocations for a warehouse</span><span class="status s2xx">200</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>GET /allocation/warehouse/MWH.023</pre></div>
+          <div class="code-block"><div class="code-label">Response · 200 OK</div><pre>[
+  { "id": 1, "warehouseBusinessUnitCode": "MWH.023", "productId": 1, "storeId": 1 },
+  { "id": 3, "warehouseBusinessUnitCode": "MWH.023", "productId": 1, "storeId": 2 }
+]</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method get">GET</span><span class="ep-path">/allocation/store/{storeId}</span><span class="ep-desc">Allocations for a store</span><span class="status s2xx">200</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>GET /allocation/store/1</pre></div>
+          <div class="code-block"><div class="code-label">Response · 200 OK</div><pre>[
+  { "id": 1, "warehouseBusinessUnitCode": "MWH.023", "productId": 1, "storeId": 1 },
+  { "id": 2, "warehouseBusinessUnitCode": "MWH.012", "productId": 1, "storeId": 1 }
+]</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method post">POST</span><span class="ep-path">/allocation</span><span class="ep-desc">Create allocation</span><span class="status s2xx">201</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>POST /allocation
+Content-Type: application/json
+
+{ "warehouseBusinessUnitCode": "MWH.023", "productId": 1, "storeId": 1 }</pre></div>
+          <div class="code-block"><div class="code-label">Response · 201 Created</div><pre>{ "id": 1, "warehouseBusinessUnitCode": "MWH.023", "productId": 1, "storeId": 1 }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method post">POST</span><span class="ep-path">/allocation</span><span class="ep-desc">Duplicate rejected</span><span class="status s4xx">400</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>POST /allocation
+Content-Type: application/json
+
+{ "warehouseBusinessUnitCode": "MWH.023", "productId": 1, "storeId": 1 }</pre></div>
+          <div class="code-block"><div class="code-label">Response · 400 Bad Request</div><pre>{ "code": 400, "error": "This warehouse-product-store allocation already exists." }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method post">POST</span><span class="ep-path">/allocation</span><span class="ep-desc">Constraint 1 — max 2 warehouses/product/store</span><span class="status s4xx">400</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request (3rd warehouse for product 1 at store 1)</div><pre>POST /allocation
+Content-Type: application/json
+
+{ "warehouseBusinessUnitCode": "MWH.001", "productId": 1, "storeId": 1 }</pre></div>
+          <div class="code-block"><div class="code-label">Response · 400 Bad Request</div><pre>{ "code": 400, "error": "Product 1 is already allocated to 2 warehouses for store 1." }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method post">POST</span><span class="ep-path">/allocation</span><span class="ep-desc">Constraint 2 — max 3 warehouses/store</span><span class="status s4xx">400</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request (4th distinct warehouse for store 2)</div><pre>POST /allocation
+Content-Type: application/json
+
+{ "warehouseBusinessUnitCode": "MWH.VAL", "productId": 3, "storeId": 2 }</pre></div>
+          <div class="code-block"><div class="code-label">Response · 400 Bad Request</div><pre>{ "code": 400, "error": "Store 2 is already served by 3 different warehouses." }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method post">POST</span><span class="ep-path">/allocation</span><span class="ep-desc">Non-existent warehouse</span><span class="status s4xx">404</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>POST /allocation
+Content-Type: application/json
+
+{ "warehouseBusinessUnitCode": "WH.GHOST.999", "productId": 1, "storeId": 1 }</pre></div>
+          <div class="code-block"><div class="code-label">Response · 404 Not Found</div><pre>{ "code": 404, "error": "Warehouse 'WH.GHOST.999' not found or archived." }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method post">POST</span><span class="ep-path">/allocation</span><span class="ep-desc">Non-existent product</span><span class="status s4xx">404</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>POST /allocation
+Content-Type: application/json
+
+{ "warehouseBusinessUnitCode": "MWH.001", "productId": 9999, "storeId": 1 }</pre></div>
+          <div class="code-block"><div class="code-label">Response · 404 Not Found</div><pre>{ "code": 404, "error": "Product with id 9999 not found." }</pre></div>
+        </div>
+      </div>
+
+      <div class="ep"><div class="ep-head" onclick="toggle(this)"><span class="method post">POST</span><span class="ep-path">/allocation</span><span class="ep-desc">Non-existent store</span><span class="status s4xx">404</span><span class="check">✓</span><span class="chevron">▼</span></div>
+        <div class="ep-body">
+          <div class="code-block"><div class="code-label">Request</div><pre>POST /allocation
+Content-Type: application/json
+
+{ "warehouseBusinessUnitCode": "MWH.001", "productId": 1, "storeId": 9999 }</pre></div>
+          <div class="code-block"><div class="code-label">Response · 404 Not Found</div><pre>{ "code": 404, "error": "Store with id 9999 not found." }</pre></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+function toggle(head) {
+  head.closest('.ep').classList.toggle('open');
+}
+function activate(link) {
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  link.classList.add('active');
+}
+const sections = document.querySelectorAll('.api-section');
+const navItems = document.querySelectorAll('.nav-item');
+window.addEventListener('scroll', () => {
+  let cur = '';
+  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 80) cur = s.id; });
+  navItems.forEach(n => {
+    n.classList.toggle('active', n.getAttribute('href') === '#' + cur);
+  });
+}, { passive: true });
+</script>
+
+</body>
+</html>
